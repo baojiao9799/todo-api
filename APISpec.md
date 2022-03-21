@@ -16,8 +16,8 @@ Username - String (PK)
 ### Todo:
 ```
 ID - Guid (PK)
-Title - String
 Username - String (FK User)
+Title - String
 Status - Enumified String
 CreationDate - Date
 DueDate - Date
@@ -34,7 +34,7 @@ Todos - Todo[] (List of Todos for the user)
 ### Todo
 ```
 ID - Guid
-User - User
+Username - String
 Title - String
 Status - Status
 CreationDate - Date
@@ -45,7 +45,7 @@ DueDate - Date
 ```
 OPEN
 IN_PROGRESS
-COMPLETED
+COMPLETE
 ```
 
 ## Endpoints
@@ -54,7 +54,7 @@ COMPLETED
 ---
 
 ```
-POST /todo/{UserId}
+POST /todo/{username}
 ```
 
 Body: 
@@ -68,11 +68,11 @@ Body:
 }
 ```
 
-**Response** - 204 No Content
+**Response** - `204 No Content`
 
 **Error Codes**:
 
-`404 Not Found` - User ID does not exist in the API
+`404 Not Found` - User with username does not exist in the API
 
 `400 Bad Request` - Request payload invalid OR dueDate provided not a valid date
 
@@ -87,7 +87,7 @@ GET /todo/{username}
 
 Body: None
 
-**Response** - 200 OK
+**Response** - `200 OK`
 
 Body:
 ```
@@ -129,7 +129,7 @@ DEL /todo/{id}
 
 Body: None
 
-**Response** - 204 No Content
+**Response** - `204 No Content`
 
 **Error Codes**:
 
@@ -150,13 +150,13 @@ Body:
     "meta": {},
     "data": {
         "title": "My updated todo",
-        "status": "OPEN|IN_PROGRESS|COMPLETED",
+        "status": "OPEN|IN_PROGRESS|COMPLETE",
         "dueDate": "2022-04-02"
     }
 }
 ```
 
-**Response** - 204 No Content
+**Response** - `204 No Content`
 
 **Error Codes**:
 `404 Not Found` - Todo with given ID does not exist in the API
@@ -182,7 +182,7 @@ Body:
 }
 ```
 
-**Response** - 204 No Content
+**Response** - `204 No Content`
 
 **Error Codes**:
 `400 Bad Request` - Request payload invalid
@@ -191,7 +191,9 @@ Body:
 Body:
 ```
 {
-    "meta": {},
+    "meta": {
+        "status": "failure"
+    },
     "data": {
         "msg": "username already exists"
     }
@@ -209,7 +211,7 @@ DEL /users/{username}
 
 Body: None
 
-**Response** - 204 No Content
+**Response** - `204 No Content`
 
 **Error Codes**:
 `404 Not Found` - User with username does not exist in the API
