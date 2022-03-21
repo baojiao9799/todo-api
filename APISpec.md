@@ -2,43 +2,28 @@
 
 ## API Resources
 
-* **User** - A User represents an owner of Todos and corresponds one-to-many to a Todo.
-
-* **Todo** - A Todo represents a task to be completed and corresponds many-to-one to a User.
+* **Todo** - A Todo represents a task to be completed.
 
 ## Data Tables
-
-### User:
-```
-Username - String (PK)
-```
 
 ### Todo:
 ```
 ID - Guid (PK)
-Username - String (FK User)
 Title - String
 Status - Enumified String
-CreationDate - Date
-DueDate - Date
+CreationDate - Datetime
+DueDate - Datetime
 ```
 
 ## Data Models
 
-### User
-```
-Username - String
-Todos - Todo[] (List of Todos for the user)
-```
-
 ### Todo
 ```
 ID - Guid
-Username - String
 Title - String
 Status - Status
-CreationDate - Date
-DueDate - Date
+CreationDate - Datetime
+DueDate - Datetime
 ```
 
 ### Status
@@ -50,11 +35,11 @@ COMPLETE
 
 ## Endpoints
 
-### Create New Todo for User
+### Create New Todo
 ---
 
 ```
-POST /todo/{username}
+POST /todo
 ```
 
 Body: 
@@ -63,7 +48,7 @@ Body:
     "meta": {},
     "data": {
         "title": "Buy groceries",
-        "dueDate": "2022-04-01"
+        "dueDate": "2022-04-01T13:02:37.000Z"
     }
 }
 ```
@@ -72,17 +57,15 @@ Body:
 
 **Error Codes**:
 
-`404 Not Found` - User with username does not exist in the API
-
 `400 Bad Request` - Request payload invalid OR dueDate provided not a valid date
 
 
-### Fetch all Todos for a User
+### Fetch all Todos
 ---
 
 **Request**:
 ``` 
-GET /todo/{username}
+GET /todo
 ```
 
 Body: None
@@ -101,8 +84,8 @@ Body:
                 "id": "8a480c40-e4be-4b89-91c9-844de091a214",
                 "title": "A todo",
                 "status": "OPEN|IN_PROGRESS|COMPLETE",
-                "creationDate": "2022-03-18",
-                "dueDate": "2022-04-01"
+                "creationDate": "2022-03-18T13:03:03.000Z",
+                "dueDate": "2022-04-01T00:00:00.000Z"
             },
             {
                 ...
@@ -114,8 +97,6 @@ Body:
 
 **Error Codes**:
 
-`404 Not Found` - User with username does not exist in the API
-
 `404 Bad Request` - Request payload invalid OR status provided not a valid enum value
 
 
@@ -124,7 +105,7 @@ Body:
 
 **Request**:
 ```
-DEL /todo/{id}
+DELETE /todo/{id}
 ```
 
 Body: None
@@ -151,7 +132,7 @@ Body:
     "data": {
         "title": "My updated todo",
         "status": "OPEN|IN_PROGRESS|COMPLETE",
-        "dueDate": "2022-04-02"
+        "dueDate": "2022-04-02T00:00:00.000Z"
     }
 }
 ```
@@ -162,56 +143,3 @@ Body:
 `404 Not Found` - Todo with given ID does not exist in the API
 
 `400 Bad Request` - Request payload invalid OR status provided not a valid enum value
-
-
-### Create a User
----
-
-**Request**:
-```
-POST /users
-```
-
-Body:
-```
-{
-    "meta": {},
-    "data": {
-        "username": "tom_jerry"
-    }
-}
-```
-
-**Response** - `204 No Content`
-
-**Error Codes**:
-`400 Bad Request` - Request payload invalid
-
-`409 Conflict` - User with username already exists in API
-Body:
-```
-{
-    "meta": {
-        "status": "failure"
-    },
-    "data": {
-        "msg": "username already exists"
-    }
-}
-```
-
-
-### Delete a User
----
-
-**Request**:
-```
-DEL /users/{username}
-```
-
-Body: None
-
-**Response** - `204 No Content`
-
-**Error Codes**:
-`404 Not Found` - User with username does not exist in the API
