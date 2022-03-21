@@ -99,24 +99,6 @@ Body:
 
 `404 Bad Request` - Request payload invalid OR status provided not a valid enum value
 
-
-### Delete Todo
----
-
-**Request**:
-```
-DELETE /todo/{id}
-```
-
-Body: None
-
-**Response** - `204 No Content`
-
-**Error Codes**:
-
-`404 Not Found` - Todo with given ID does not exist in the API
-
-
 ### Update a Todo
 ---
 
@@ -143,3 +125,20 @@ Body:
 `404 Not Found` - Todo with given ID does not exist in the API
 
 `400 Bad Request` - Request payload invalid OR status provided not a valid enum value
+
+
+### Delete a Todo
+---
+
+**Request**:
+```
+DELETE /todo/{id}
+```
+
+Body: None
+
+**Response** - `204 No Content`
+
+**Error Codes**:
+
+`404 Not Found` - Todo with given ID does not exist in the API
