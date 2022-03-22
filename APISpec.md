@@ -32,7 +32,6 @@ DueDate - Datetime
 ID - Guid (PK)
 UserID - Guid (FK - ID in Users)
 Token - String
-Expiration - Datetime
 ```
 
 ## Data Models
@@ -43,7 +42,6 @@ ID - Guid
 Username - String
 Password - String (Hash)
 Todos - Todo[] (List of Todos for the user)
-Sessions - Session[] (List of active sessions for the user)
 ```
 
 ### Todo
@@ -108,7 +106,7 @@ Headers:
 
 `400 Bad Request` - Request payload invalid OR dueDate provided not a valid date
 
-`401 Unauthorized` - Request does not have valid authentication to create todo
+`401 Unauthorized` - User/Client is not authenticated
 
 ### Fetch all Todos
 ---
@@ -151,7 +149,7 @@ Body:
 
 `404 Bad Request` - Request payload invalid OR status provided not a valid enum value OR invalid dates
 
-`401 Unauthorized` - Request does not have valid authentication to fetch todos
+`401 Unauthorized` - User/Client is not authenticated
 
 ### Update a Todo
 ---
@@ -186,7 +184,9 @@ Body:
 
 `400 Bad Request` - Request payload invalid OR status provided not a valid enum value
 
-`401 Unauthorized` - Request does not have valid authentication to update the todo
+`401 Unauthorized` - User/Client is not authenticated
+
+`403 Forbidden` - User/Client does not have permission to edit todo
 
 ### Delete a Todo
 ---
@@ -209,7 +209,9 @@ Body: None
 
 `404 Not Found` - Todo with given ID does not exist in the API
 
-`401 Unauthorized` - Request does not have valid authentication to delete todo
+`401 Unauthorized` - User/Client is not authenticated
+
+`403 Forbidden` - User/Client does not have permission to delete todo
 
 ### Create a User
 ---
@@ -246,11 +248,10 @@ Body:
 ```
 {
     "meta": {
-        "success": false
-    },
-    "data": {
+        "success": false,
         "msg": "username already exists"
-    }
+    },
+    "data": {}
 }
 ```
 
@@ -274,23 +275,19 @@ Body:
     "data": [
         {
             "id": "3fad06ad-88f5-432d-b91d-0415fdddf015",
-            "username": "one_ok_rock",
-            "password": "hashed password"
+            "username": "one_ok_rock"
         },
         {
             "id": "93383ee7-447f-4896-b60a-8e5a4584810b",
-            "username": "trash",
-            "password": "hashed password"
+            "username": "trash"
         },
         {
             "id": "57976ec6-29dc-4125-826b-4c7eddacc6ca",
-            "username": "life_awaits",
-            "password": "hashed password"
+            "username": "life_awaits"
         },
         {
             "id": "235d67a7-a511-4bd4-8e85-59ad3c80416d",
-            "username": "beyond",
-            "password": "hashed password"
+            "username": "beyond"
         }
     ]
 }
@@ -303,7 +300,7 @@ Body:
 
 **Request**:
 ```
-PUT /users/{id}/password
+PUT /users/{id}/
 ```
 
 Headers: 
@@ -328,22 +325,11 @@ Body:
 
 `404 Not Found` - User with ID does not exist in the API
 
-`401 Unauthorized` - Request does not have valid authentication to update username
+`401 Unauthorized` - User/Client is not authenticated
 
-`400 Bad Request` - Request payload invalid
+`403 Forbidden` - User/Client does not have permission to update user
 
-`403 Forbidden` - oldPassword does not match password in the API
-Body: 
-```
-{
-    "meta": {
-        "success": false
-    },
-    "data": {
-        "msg": "old password does not match"
-    }
-}
-```
+`400 Bad Request` - Request payload invalid OR oldPassword does not match password in the API
 
 ### Delete a User
 ---
@@ -366,14 +352,16 @@ Body: None
 
 `404 Not Found` - User with ID does not exist in the API
 
-`401 Unauthorized` - Request does not have valid authentication to delete user
+`401 Unauthorized` - User/Client is not authenticated
 
-### Create a User Session
+`403 Forbidden` - User/Client does not have permission to delete user
+
+### Create a User Session (login)
 ---
 
 **Request**:
 ```
-POST sessions/login
+POST /login
 ```
 
 Body:
@@ -397,112 +385,8 @@ Body:
     "data": {
         "sessionId": "03e91265-dee1-4692-a1e8-4ba031424643",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2Mj5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-        "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d",
-        "expiration": "2022-03-23T03:15:27.100Z"
-}
-```
-
-### Fetch User Sessions
----
-
-**Request**:
-```
-GET /sessions
-```
-
-**Response** - `200 OK`
-Body:
-```
-{
-    "meta": {
-        "sessionCount": 2
-    },
-    "data": [
-        {
-            "sessionId": "03e91265-dee1-4692-a1e8-4ba031424643",
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2Mj5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-            "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d",
-            "expiration": "2022-03-23T03:15:27.100Z"
-        },
-        {
-            ...
-        }
-    ]
+        "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d"
 }
 ```
 
 **Error Codes**: None
-
-### Update User Session
----
-
-**Request**:
-```
-PUT /sessions/{id}/reauthentication
-```
-
-Headers:
-```
-"Authorization": Bearer <Token>
-```
-
-Body:
-```
-{
-    "meta": {},
-    "data": {
-        "username": "tomandjerry",
-        "password": "P@ssw0rd!"
-    }
-}
-```
-
-**Response** - `200 OK`
-Body:
-```
-{
-    "meta": {
-        "success": true/false
-    },
-    "data": {
-            "sessionId": "03e91265-dee1-4692-a1e8-4ba031424643",
-            "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijk5QjU0MkY1LTVERTctNEMxQS1BMjQ5LTE3NjgzRkMxMEVDQSIsInVzZXJuYW1lIjoiUmlja3l1bWVhbiIsInBlcm1pc3Npb25zIjpbXSwiY3VzdG9tZXJfYWNjb3VudCI6Mzk5MTkyLCJyb2xlcyI6W10sImlzV2ViVG9rZW4iOnRydWUsImlhdCI6MTY0Nzg5MDYxNCwiZXhwIjoxNjQ3OTMzODE0fQ.y9fdpCsg34Zdz-D_xjKw-BM1Px5_AxrM48gPTIbHPIY",
-            "expiration": "2022-03-24T03:15:27.100Z"
-    }
-}
-```
-
-**Error Codes**:
-
-`404 Not Found` - Session with ID not found
-
-`400 Bad Request` - Invalid response payload
-
-`401 Unauthorized` - Request does not have valid authentication to update user session
-
-`403 Forbidden` - Incorrect username or password OR user for session does not match user ID of username/password combination
-Body:
-```
-{
-    "meta": {
-        "success": false
-    },
-    "data": {
-        "msg": "Invalid username/password"
-    }
-}
-```
-
-### Delete User Session
----
-
-**Request**:
-```
-DELETE /sessions/{id}
-```
-
-**Response** - `204 No Content`
-
-**Error Codes**:
-
-`404 Not Found` - Session with ID does not exist in API
