@@ -10,21 +10,29 @@
 
 ## Data Tables
 
-### User:
+### Users:
 ```
 ID - Guid (PK)
 Username - String
 Password - String (Hash)
 ```
 
-### Todo:
+### Todos:
 ```
 ID - Guid (PK)
-UserID - Guid (FK - ID in User)
+UserID - Guid (FK - ID in Users)
 Title - String
 Status - Enumified String
 CreationDate - Datetime
 DueDate - Datetime
+```
+
+### Tokens:
+```
+ID - Guid (PK)
+UserID - Guid (FK - ID in Users)
+Token - String
+Expiration - Datetime
 ```
 
 ## Data Models
@@ -33,6 +41,7 @@ DueDate - Datetime
 ```
 ID - Guid
 Username - String
+Password - String (Hash)
 Todos - Todo[] (List of Todos for the user)
 Sessions - Session[] (List of active sessions for the user)
 ```
@@ -49,8 +58,10 @@ DueDate - Datetime
 
 ### Session
 ```
-Token - String (JWT for current session)
+ID - Guid
+Token - String (JWT from auth0)
 User - User
+Expiration - Datetime
 ```
 
 ### Status
@@ -232,7 +243,9 @@ Headers:
 Body:
 ```
 {
-    "meta": {},
+    "meta": {
+        "success": false
+    },
     "data": {
         "msg": "username already exists"
     }
@@ -317,7 +330,18 @@ Body:
 
 `400 Bad Request` - Request payload invalid
 
-`
+`403 Forbidden` - oldPassword does not match password in the API
+Body: 
+```
+{
+    "meta": {
+        "success": false
+    },
+    "data": {
+        "msg": "old password does not match"
+    }
+}
+```
 
 ### Delete a User
 ---
@@ -369,8 +393,10 @@ Body:
         "success": true/false
     },
     "data": {
+        "sessionId": "03e91265-dee1-4692-a1e8-4ba031424643",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2Mj5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-        "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d"
+        "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d",
+        "expiration": "2022-03-23T03:15:27.100Z"
 }
 ```
 
@@ -391,8 +417,10 @@ Body:
     },
     "data": [
         {
+            "sessionId": "03e91265-dee1-4692-a1e8-4ba031424643",
             "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2Mj5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-        "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d"
+            "userId": "235d67a7-a511-4bd4-8e85-59ad3c80416d",
+            "expiration": "2022-03-23T03:15:27.100Z"
         },
         {
             ...
@@ -402,3 +430,77 @@ Body:
 ```
 
 **Error Codes**: None
+
+### Update User Session
+---
+
+**Request**:
+```
+PUT /reauthenticate/{id}
+```
+
+Headers:
+```
+"Authorization": Bearer <Token>
+```
+
+Body:
+```
+{
+    "meta": {},
+    "data": {
+        "username": "tomandjerry",
+        "password": "P@ssw0rd!"
+    }
+}
+```
+
+**Response** - `200 OK`
+Body:
+```
+{
+    "meta": {
+        "success": true/false
+    },
+    "data": {
+            "sessionId": "03e91265-dee1-4692-a1e8-4ba031424643",
+            "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Ijk5QjU0MkY1LTVERTctNEMxQS1BMjQ5LTE3NjgzRkMxMEVDQSIsInVzZXJuYW1lIjoiUmlja3l1bWVhbiIsInBlcm1pc3Npb25zIjpbXSwiY3VzdG9tZXJfYWNjb3VudCI6Mzk5MTkyLCJyb2xlcyI6W10sImlzV2ViVG9rZW4iOnRydWUsImlhdCI6MTY0Nzg5MDYxNCwiZXhwIjoxNjQ3OTMzODE0fQ.y9fdpCsg34Zdz-D_xjKw-BM1Px5_AxrM48gPTIbHPIY",
+            "expiration": "2022-03-24T03:15:27.100Z"
+    }
+}
+```
+
+**Error Codes**:
+
+`404 Not Found` - Session with ID not found
+
+`400 Bad Request` - Invalid response payload
+
+`401 Unauthorized` - Request does not have valid authentication to update user session
+
+`403 Forbidden` - Incorrect username or password OR user for session does not match user ID of username/password combination
+Body:
+```
+{
+    "meta": {
+        "success": false
+    },
+    "data": {
+        "msg": "Invalid username/password"
+    }
+}
+```
+
+### Delete User Session
+---
+
+**Request**:
+```
+DELETE /logout/{id}
+```
+
+**Response** - `204 No Content`
+
+**Error Codes**:
+
+`404 Not Found` - Session with ID does not exist in API
