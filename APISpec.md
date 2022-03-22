@@ -98,6 +98,7 @@ Body:
 ```
 
 **Response** - `201 Created`
+
 Headers: 
 ```
 "Location": "/todos/{id}"
@@ -230,6 +231,7 @@ Body:
 ```
 
 **Response** - `201 Created`
+
 Headers:
 ```
 "Location": "/users/{id}"
