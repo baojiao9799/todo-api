@@ -371,7 +371,7 @@ Body: None
 
 **Request**:
 ```
-POST /login
+POST sessions/login
 ```
 
 Body:
@@ -436,7 +436,7 @@ Body:
 
 **Request**:
 ```
-PUT /reauthenticate/{id}
+PUT /sessions/{id}/reauthentication
 ```
 
 Headers:
@@ -496,7 +496,7 @@ Body:
 
 **Request**:
 ```
-DELETE /logout/{id}
+DELETE /sessions/{id}
 ```
 
 **Response** - `204 No Content`
