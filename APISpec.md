@@ -147,8 +147,6 @@ Body:
 
 **Error Codes**:
 
-`404 Bad Request` - Request payload invalid OR status provided not a valid enum value OR invalid dates
-
 `401 Unauthorized` - User/Client is not authenticated
 
 ### Update a Todo
