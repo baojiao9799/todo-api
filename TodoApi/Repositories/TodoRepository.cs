@@ -29,22 +29,30 @@ namespace TodoApi.Repositories {
             return await todos.ToListAsync();
         }
 
-        public async Task<Todo> UpdateAsync(Guid id, Todo inputTodo) {
-            inputTodo.Id = id;
+        public async Task<Todo?> UpdateAsync(Guid id, Todo inputTodo) {
+            var todo = await todos.FindAsync(id);
 
-            var todo = todos.Update(inputTodo);
+            if (todo is null) return null;
+
+            todo.Title = inputTodo.Title;
+            todo.Status = inputTodo.Status;
+            todo.DueDate = inputTodo.DueDate;
 
             await _db.SaveChangesAsync();
 
-            return todo.Entity;
+            return todo;
         }
 
-        public async Task<Todo> DeleteAsync(Guid id) {
-            var todo = todos.Remove(new Todo { Id = id });
+        public async Task<Todo?> DeleteAsync(Guid id) {
+            var todo = await todos.FindAsync(id);
+
+            if (todo is null) return null;
+
+            var removedTodo = todos.Remove(todo);
             
             await _db.SaveChangesAsync();
             
-            return todo.Entity;
+            return removedTodo.Entity;
         }
     }
 }

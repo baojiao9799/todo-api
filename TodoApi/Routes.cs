@@ -16,7 +16,9 @@ namespace TodoApi
 
             app.MapGet("/todos", async (ITodoRepository repo) =>
             {
-                return await repo.FetchAsync();
+                var todos = await repo.FetchAsync();
+
+                return Results.Ok(todos);
             });
 
             app.MapPut("/todos/{id}", async (Guid id, Todo inputTodo, ITodoRepository repo) =>
