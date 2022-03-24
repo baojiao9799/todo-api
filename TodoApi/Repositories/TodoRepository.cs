@@ -43,16 +43,6 @@ namespace TodoApi.Repositories
             {
                 return null;
             }
-            // if (!TodoExists(index))
-            // {
-            //     return null;
-            // }
-
-            // entity.Id = index;
-            // var todo = _context.Update(entity);
-            // await _context.SaveChangesAsync();
-
-            // return todo.Entity;
         }
         public async Task<Todo?> DeleteAsync(Guid index)
         {
