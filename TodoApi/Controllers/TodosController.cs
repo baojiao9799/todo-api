@@ -10,7 +10,7 @@ using TodoApi.Models;
 
 namespace TodoApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/todos")]
     [ApiController]
     public class TodosController : ControllerBase
     {
@@ -21,29 +21,32 @@ namespace TodoApi.Controllers
             _context = context;
         }
 
-        // GET: api/Todos
+        // POST: /todos
+        [HttpPost]
+        public async Task<ActionResult<Todo>> PostTodo(Todo todo)
+        {
+            _context.Todos.Add(todo);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetTodo", new { id = todo.Id }, todo);
+        }
+
+        // GET: /todos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Todo>>> GetTodos()
         {
             return await _context.Todos.ToListAsync();
         }
 
-        // GET: api/Todos/5
+        // GET: /todos/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Todo>> GetTodo(Guid id)
         {
-            var todo = await _context.Todos.FindAsync(id);
-
-            if (todo == null)
-            {
-                return NotFound();
-            }
-
-            return todo;
+            return await _context.Todos.FindAsync(id);
         }
 
-        // PUT: api/Todos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
+        // PUT: todos/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodo(Guid id, Todo todo)
         {
@@ -73,18 +76,8 @@ namespace TodoApi.Controllers
             return NoContent();
         }
 
-        // POST: api/Todos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Todo>> PostTodo(Todo todo)
-        {
-            _context.Todos.Add(todo);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTodo", new { id = todo.Id }, todo);
-        }
-
-        // DELETE: api/Todos/5
+        // DELETE: todos/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodo(Guid id)
         {
