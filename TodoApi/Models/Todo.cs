@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
+using TodoApi.Repositories;
 
 namespace TodoApi.Models
 {
-    public class Todo
+    public class Todo : IEntity<Guid>
     {
         public Guid Id { get; set; }
         public string? Title { get; set; }
