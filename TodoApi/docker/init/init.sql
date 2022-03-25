@@ -1,2 +1,2 @@
 -- Initialize database
-CREATE DATABASE todos-app;
+CREATE DATABASE todos_app;
