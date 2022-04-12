@@ -1,5 +1,6 @@
 using TodoApi.Models;
 using TodoApi.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace TodoApi.Extensions
 {
@@ -21,6 +22,13 @@ namespace TodoApi.Extensions
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+        }
+
+        private static void ConfigureAuthentication(WebApplicationBuilder builder)
+        {
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
+                    options => builder.Configuration.Bind("JwtSettings", options));
         }
     }
 }
