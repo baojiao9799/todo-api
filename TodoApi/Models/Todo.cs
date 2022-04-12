@@ -6,7 +6,6 @@ namespace TodoApi.Models
     public class Todo : IEntity<Guid>
     {
         public Guid Id { get; set; }
-        public User User { get; set; }
         public string? Title { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public Status Status { get; set; } = Status.Open;

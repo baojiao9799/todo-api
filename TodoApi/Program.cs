@@ -1,22 +1,17 @@
-using Microsoft.EntityFrameworkCore;
-using TodoApi.Models;
-using TodoApi.Repositories;
+using TodoApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.ConfigureServices();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TodoApi v1"));
 }
 
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
