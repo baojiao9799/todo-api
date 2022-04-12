@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     username VARCHAR(20) UNIQUE NOT NULL,
-    password VARCHAR(20) NOT NULL
+    password VARCHAR(84) NOT NULL
 );
 
 CREATE TYPE completion_status AS ENUM ('open', 'in_progress', 'complete');
