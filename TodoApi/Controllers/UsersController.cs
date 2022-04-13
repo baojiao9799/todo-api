@@ -21,7 +21,7 @@ namespace TodoApi.Controllers
 
         // POST: /users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<UserDTO>> CreateUser(User user)
         {
             PasswordUtil.HashUserPassword(user);
 
@@ -32,13 +32,13 @@ namespace TodoApi.Controllers
 
         // GET: /users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
+        public async Task<IEnumerable<UserDTO>> GetUsers()
         {
             var users = await _repo.GetAsync();
 
             var usersDTO = users.Select(user => UserDTO.UserToDTO(user));
 
-            return Ok(usersDTO);
+            return usersDTO;
         }
 
         // GET: /users/{id}
@@ -52,7 +52,7 @@ namespace TodoApi.Controllers
                 return NotFound();
             }
 
-            return Ok(UserDTO.UserToDTO(user));
+            return UserDTO.UserToDTO(user);
         }
 
 

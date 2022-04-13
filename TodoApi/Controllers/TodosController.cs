@@ -35,9 +35,9 @@ namespace TodoApi.Controllers
 
         // GET: /todos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Todo>>> GetTodos()
+        public async Task<IEnumerable<Todo>> GetTodos()
         {
-            return Ok(await _repo.GetAsync());
+            return await _repo.GetAsync();
         }
 
         // GET: /todos/{id}
@@ -51,7 +51,7 @@ namespace TodoApi.Controllers
                 return NotFound();
             }
 
-            return Ok(todo);
+            return todo;
         }
 
 
