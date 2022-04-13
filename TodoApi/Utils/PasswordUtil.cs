@@ -9,9 +9,9 @@ namespace TodoApi.Utils
         public static void HashUserPassword(User user) {
             // Documentation: https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/password-hashing?view=aspnetcore-6.0
             byte[] salt = new byte[128 / 8];
-            using (var rngCsp = new RNGCryptoServiceProvider())
+            using (var rng = RandomNumberGenerator.Create())
             {
-                rngCsp.GetNonZeroBytes(salt);
+                rng.GetNonZeroBytes(salt);
             }
 
             string hashed = GetHashedPassword(salt, user.Password);
