@@ -37,7 +37,7 @@ namespace TodoApi.Controllers
             var users = await _repo.GetAsync();
 
             var usersDTO = users.Select(user => UserDTO.UserToDTO(user));
-
+            
             return usersDTO;
         }
 
@@ -58,7 +58,7 @@ namespace TodoApi.Controllers
 
         // PUT: users/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> ResetPassword(Guid id, ResetPasswordModel resetPasswordInfo)
+        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordModel resetPasswordInfo)
         {
             var userToUpdate = await _repo.FindAsync(id);
 

@@ -35,9 +35,58 @@ namespace TodoApi.Controllers
 
         // GET: /todos
         [HttpGet]
-        public async Task<IEnumerable<Todo>> GetTodos()
+        public async Task<IEnumerable<Todo>> GetTodos([FromQuery] string sortBy, [FromQuery] string order, [FromQuery] Status? status)
         {
-            return await _repo.GetAsync();
+            var todos = await _repo.GetAsync();
+
+            switch (sortBy)
+            {   
+                case "due_date":
+                    if (order == "desc") {
+                        todos = todos.OrderByDescending(todo => todo.DueDate);
+                    } else {
+                        todos = todos.OrderBy(todo => todo.DueDate);
+                    }
+                    break;
+                case "status":
+                    if (order == "desc") 
+                    {
+                        todos = todos.OrderByDescending(todo => todo.Status);
+                    } 
+                    else 
+                    {
+                        todos = todos.OrderBy(todo => todo.Status);
+                    }
+                    break;
+                case "title":
+                case "name":
+                    if (order == "desc")
+                    {
+                        todos = todos.OrderByDescending(todo => todo.Title);
+                    }
+                    else
+                    {
+                        todos = todos.OrderBy(todo => todo.Title);
+                    }
+                    break;
+                case "creation_date":
+                default:
+                    if (order == "desc")
+                    {
+                        todos = todos.OrderByDescending(todo => todo.CreationDate);
+                    }
+                    else
+                    {
+                        todos = todos.OrderBy(todo => todo.CreationDate);
+                    }
+                    break;
+            }
+
+            if (status != null) {
+                todos = todos.Where(todo => todo.Status == status);
+            }
+            
+            return todos;
         }
 
         // GET: /todos/{id}
