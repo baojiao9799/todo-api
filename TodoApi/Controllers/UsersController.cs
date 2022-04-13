@@ -1,8 +1,8 @@
-#nullable disable
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
 using TodoApi.Repositories;
 using TodoApi.Utils;
+
 namespace TodoApi.Controllers
 {
     [Route("/users")]
@@ -21,29 +21,29 @@ namespace TodoApi.Controllers
 
         // POST: /users
         [HttpPost]
-        public async Task<ActionResult<UserDTO>> CreateUser(User user)
+        public async Task<ActionResult<User>> CreateUser(User user)
         {
             PasswordUtil.HashUserPassword(user);
 
             var createdUser = await _repo.CreateAsync(user);
 
-            return CreatedAtAction("GetUser", new { id = createdUser.Id }, UserDTO.UserToDTO(createdUser));
+            return CreatedAtAction("GetUser", new { id = createdUser.Id }, createdUser);
         }
 
         // GET: /users
         [HttpGet]
-        public async Task<IEnumerable<UserDTO>> GetUsers()
+        public async Task<IEnumerable<User>> GetUsers()
         {
             var users = await _repo.GetAsync();
 
-            var usersDTO = users.Select(user => UserDTO.UserToDTO(user));
+            var usersDTO = users.Select(user => user);
             
-            return usersDTO;
+            return users;
         }
 
         // GET: /users/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDTO>> GetUser(Guid id)
+        public async Task<ActionResult<User>> GetUser(Guid id)
         {
             var user = await _repo.FindAsync(id);
 
@@ -52,7 +52,7 @@ namespace TodoApi.Controllers
                 return NotFound();
             }
 
-            return UserDTO.UserToDTO(user);
+            return user;
         }
 
 
