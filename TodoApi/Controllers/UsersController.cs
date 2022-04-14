@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
 using TodoApi.Repositories;
 using TodoApi.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace TodoApi.Controllers
 {
@@ -21,13 +22,22 @@ namespace TodoApi.Controllers
 
         // POST: /users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<User>> CreateUser(LoginData userInfo)
         {
+            var user = new User(userInfo.Username, userInfo.Password);
             PasswordUtil.HashUserPassword(user);
 
-            var createdUser = await _repo.CreateAsync(user);
+            try
+            {
+                var createdUser = await _repo.CreateAsync(user);
 
-            return CreatedAtAction("GetUser", new { id = createdUser.Id }, createdUser);
+                return CreatedAtAction("GetUser", new { id = createdUser.Id }, createdUser);
+            }
+            catch (DbUpdateException)
+            {
+                // TODO: add body
+                return Conflict();
+            }
         }
 
         // GET: /users

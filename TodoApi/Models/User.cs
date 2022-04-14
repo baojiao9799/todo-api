@@ -10,6 +10,16 @@ namespace TodoApi.Models {
         public string? Password { get; set; }
         [JsonIgnore]
         public string? Salt { get; set; }
+
+        public User
+        (
+            string username,
+            string password
+        )
+        {
+            Username = username;
+            Password = password;
+        }
     }
 
     public class ResetPasswordModel

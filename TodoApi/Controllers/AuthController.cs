@@ -2,10 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using TodoApi.Repositories;
 using TodoApi.Models;
 using TodoApi.Utils;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Security.Claims;
 
 namespace TodoApi.Controllers
 {
@@ -42,27 +38,12 @@ namespace TodoApi.Controllers
                 // Todo: return failure in metadata
                 return Ok();
             }
-
-            var jwtToken = generateJwtToken(user);
+            var expiration = DateTime.UtcNow.AddMinutes(15);
+            var jwtToken = JwtUtil.generateJwtToken(user, _appConfig.JwtSettings, expiration);
 
             var dbToken = await _authRepo.CreateAsync(new Token(jwtToken));
         
-            return new Session(dbToken.Id, jwtToken);
-        }
-
-        private string generateJwtToken(User user) {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appConfig.JwtSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString())}),
-                Expires = DateTime.UtcNow.AddMinutes(15),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                Audience = _appConfig.JwtSettings.Audience,
-                Issuer = _appConfig.JwtSettings.Issuer
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            return new Session(dbToken.Id, jwtToken, user, expiration);
         }
     }
 }

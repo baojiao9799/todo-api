@@ -11,5 +11,7 @@ namespace TodoApi.Models
         public Status Status { get; set; } = Status.Open;
         public DateTime CreationDate { get; set; } = DateTime.UtcNow;
         public DateTime DueDate { get; set; }
+        [JsonIgnore]
+        public Guid UserId { get; set; }
     }
 }

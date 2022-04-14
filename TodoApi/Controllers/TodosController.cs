@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Models;
 using TodoApi.Repositories;
@@ -29,6 +24,17 @@ namespace TodoApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Todo>> PostTodo(Todo todo)
         {
+            // Get user for current session
+            var guid = new Guid();
+            var userId = HttpContext.User.Identity?.Name;
+            Guid.TryParse(userId, out guid);
+            if (guid == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
+            // Create todo for user
+            todo.UserId = guid;
             var createdTodo = await _repo.CreateAsync(todo);
 
             return CreatedAtAction("GetTodo", new { id = createdTodo.Id }, createdTodo);
@@ -36,10 +42,20 @@ namespace TodoApi.Controllers
 
         // GET: /todos
         [HttpGet]
-        public async Task<IEnumerable<Todo>> GetTodos([FromQuery] string? sortBy, [FromQuery] string? order, [FromQuery] Status? status)
+        public async Task<ActionResult<List<Todo>>> GetTodos([FromQuery] string? sortBy, [FromQuery] string? order, [FromQuery] Status? status)
         {
-            var todos = await _repo.GetAsync();
+            // Get user for session
+            var userId = HttpContext.User.Identity?.Name;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
 
+            // Get todos for user
+            var todos = await _repo.GetAsync();
+            todos = todos.Where(todo => todo.UserId.ToString() == userId);
+
+            // Sort results
             switch (sortBy)
             {   
                 case "due_date":
@@ -83,22 +99,38 @@ namespace TodoApi.Controllers
                     break;
             }
 
+            // Filter results
             if (status != null) {
                 todos = todos.Where(todo => todo.Status == status);
             }
             
-            return todos;
+            return todos.ToList();
         }
 
         // GET: /todos/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Todo>> GetTodo(Guid id)
         {
+            // Get user for current session
+            var userId = HttpContext.User.Identity?.Name;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            // Get todo
             var todo = await _repo.FindAsync(id);
 
+            // Throw 404 Not Found if todo can't be found
             if (todo == null)
             {
                 return NotFound();
+            }
+
+            // Throw 403 Forbidden if todo doesn't belong to user
+            if (todo.UserId.ToString() != userId)
+            {
+                return Forbid();
             }
 
             return todo;
@@ -109,12 +141,30 @@ namespace TodoApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTodo(Guid id, Todo todo)
         {
-            var updatedTodo = await _repo.UpdateAsync(id, todo);
+            // Get user for current session
+            var userId = HttpContext.User.Identity?.Name;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
 
-            if (updatedTodo == null)
+            // Get todo
+            var todoToUpdate = await _repo.FindAsync(id);
+
+            // Throw 404 Not Found if todo can't be found
+            if (todoToUpdate == null)
             {
                 return NotFound();
             }
+
+            // Throw 403 Forbidden if todo doesn't belong to user
+            if (todo.UserId.ToString() != userId)
+            {
+                return Forbid();
+            }
+
+            // Update todo
+            var updatedTodo = await _repo.UpdateAsync(id, todo);
 
             return NoContent();
         }
@@ -124,14 +174,32 @@ namespace TodoApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodo(Guid id)
         {
-           var deletedTodo = await _repo.DeleteAsync(id);
+            // Get user for current session
+            var userId = HttpContext.User.Identity?.Name;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
 
-           if (deletedTodo == null)
-           {
-               return NotFound();
-           }
+            // Get todo
+            var todo = await _repo.FindAsync(id);
 
-           return NoContent();
+            // Throw 404 Not Found if todo can't be found
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            // Throw 403 Forbidden if todo doesn't belong to user
+            if (todo.UserId.ToString() != userId)
+            {
+                return Forbid();
+            }
+
+            // Delete todo
+            var deletedTodo = await _repo.DeleteAsync(id);
+
+            return NoContent();
         }
     }
 }
