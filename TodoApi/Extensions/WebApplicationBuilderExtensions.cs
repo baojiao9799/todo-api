@@ -2,6 +2,8 @@ using TodoApi.Models;
 using TodoApi.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 
 namespace TodoApi.Extensions
 {
@@ -28,7 +30,7 @@ namespace TodoApi.Extensions
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authentication",
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header
@@ -54,8 +56,14 @@ namespace TodoApi.Extensions
         private static void ConfigureAuthentication(WebApplicationBuilder builder)
         {
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
-                    options => builder.Configuration.Bind("JwtSettings", options));
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Application:JwtSettings:Issuer"],
+                        ValidAudience = builder.Configuration["Application:JwtSettings:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Application:JwtSettings:Secret"]))
+                    });
         }
     }
 }

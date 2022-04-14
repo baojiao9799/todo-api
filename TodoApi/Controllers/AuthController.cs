@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TodoApi.Repositories;
 using TodoApi.Models;
@@ -43,7 +39,8 @@ namespace TodoApi.Controllers
 
             if (user == null || !PasswordUtil.IsPasswordCorrect(user, loginData.Password))
             {
-                return NotFound();
+                // Todo: return failure in metadata
+                return Ok();
             }
 
             var jwtToken = generateJwtToken(user);
@@ -55,12 +52,14 @@ namespace TodoApi.Controllers
 
         private string generateJwtToken(User user) {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appConfig.JwtSecret);
+            var key = Encoding.ASCII.GetBytes(_appConfig.JwtSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString())}),
                 Expires = DateTime.UtcNow.AddMinutes(15),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Audience = _appConfig.JwtSettings.Audience,
+                Issuer = _appConfig.JwtSettings.Issuer
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
