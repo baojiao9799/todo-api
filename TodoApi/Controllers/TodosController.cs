@@ -36,7 +36,7 @@ namespace TodoApi.Controllers
 
         // GET: /todos
         [HttpGet]
-        public async Task<IEnumerable<Todo>> GetTodos([FromQuery] string sortBy, [FromQuery] string order, [FromQuery] Status? status)
+        public async Task<IEnumerable<Todo>> GetTodos([FromQuery] string? sortBy, [FromQuery] string? order, [FromQuery] Status? status)
         {
             var todos = await _repo.GetAsync();
 
