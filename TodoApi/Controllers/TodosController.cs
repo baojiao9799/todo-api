@@ -42,7 +42,7 @@ namespace TodoApi.Controllers
 
         // GET: /todos
         [HttpGet]
-        public async Task<ActionResult<List<Todo>>> GetTodos([FromQuery] string? sortBy, [FromQuery] string? order, [FromQuery] Status? status)
+        public async Task<ActionResult<ApiResponse<FetchTodoMeta, List<Todo>>>> GetTodos([FromQuery] string? sortBy, [FromQuery] string? order, [FromQuery] Status? status)
         {
             // Get user for session
             var userId = HttpContext.User.Identity?.Name;
@@ -103,8 +103,17 @@ namespace TodoApi.Controllers
             if (status != null) {
                 todos = todos.Where(todo => todo.Status == status);
             }
+
+            var todoList = todos.ToList();
             
-            return todos.ToList();
+            return new ApiResponse<FetchTodoMeta, List<Todo>>
+            {
+                Meta = new FetchTodoMeta
+                {
+                    TodoCount = todoList.Count
+                },
+                Data = todoList
+            };
         }
 
         // GET: /todos/{id}

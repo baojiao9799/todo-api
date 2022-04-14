@@ -11,7 +11,9 @@ namespace TodoApi.Extensions
     {
         public static void ConfigureServices(this WebApplicationBuilder builder)
         {
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            );
 
             var configManager = builder.Configuration;
             var config = new ApplicationConfig();

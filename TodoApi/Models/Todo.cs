@@ -14,4 +14,9 @@ namespace TodoApi.Models
         [JsonIgnore]
         public Guid UserId { get; set; }
     }
+
+    public class FetchTodoMeta
+    {
+        public int TodoCount { get; set; }
+    }
 }

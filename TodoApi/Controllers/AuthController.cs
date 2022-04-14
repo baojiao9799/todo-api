@@ -26,24 +26,40 @@ namespace TodoApi.Controllers
 
         // POST: /login
         [HttpPost("/login")]
-        public async Task<ActionResult<Session>> Login(LoginData loginData)
+        public async Task<ActionResult<ApiResponse<CreateSessionMeta, Session>>> Login([FromBody] ApiPayload<LoginData> payload)
         {
+            LoginData loginData = payload.Data;
             var users = await _userRepo.GetAsync();
             var user = users.FirstOrDefault(user => 
                 user.Username == loginData.Username
             );
 
+            var response = new ApiResponse<CreateSessionMeta, Session>();
+
             if (user == null || !PasswordUtil.IsPasswordCorrect(user, loginData.Password))
             {
-                // Todo: return failure in metadata
-                return Ok();
+                return new ApiResponse<CreateSessionMeta, Session>
+                {
+                    Meta = new CreateSessionMeta
+                    {
+                        Success = false,
+                        Message = "Incorrect Username or Password"
+                    }
+                };
             }
             var expiration = DateTime.UtcNow.AddMinutes(15);
             var jwtToken = JwtUtil.generateJwtToken(user, _appConfig.JwtSettings, expiration);
 
             var dbToken = await _authRepo.CreateAsync(new Token(jwtToken));
-        
-            return new Session(dbToken.Id, jwtToken, user, expiration);
+
+            return new ApiResponse<CreateSessionMeta, Session>
+            {
+                Meta = new CreateSessionMeta
+                {
+                    Success = true
+                },
+                Data = new Session(dbToken.Id, jwtToken, user, expiration)
+            };
         }
     }
 }
