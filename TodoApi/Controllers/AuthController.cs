@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using TodoApi.Repositories;
 using TodoApi.Models;
 using TodoApi.Utils;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace TodoApi.Controllers
 {
@@ -30,7 +33,7 @@ namespace TodoApi.Controllers
         {
             LoginData loginData = payload.Data;
             var users = await _userRepo.GetAsync();
-            var user = users.FirstOrDefault(user => 
+            var user = users.SingleOrDefault(user => 
                 user.Username == loginData.Username
             );
 
@@ -51,6 +54,17 @@ namespace TodoApi.Controllers
             var jwtToken = JwtUtil.generateJwtToken(user, _appConfig.JwtSettings, expiration);
 
             var dbToken = await _authRepo.CreateAsync(new Token(jwtToken));
+
+            var claims = new List<Claim>
+            {
+                new Claim("Jwt", jwtToken),
+                new Claim(ClaimTypes.Name, user.Id.ToString()),
+            };  
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme))
+            );
 
             return new ApiResponse<CreateSessionMeta, Session>
             {

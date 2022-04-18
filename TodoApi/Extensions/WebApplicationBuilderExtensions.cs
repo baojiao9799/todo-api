@@ -1,6 +1,6 @@
 using TodoApi.Models;
 using TodoApi.Repositories;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -57,15 +57,29 @@ namespace TodoApi.Extensions
 
         private static void ConfigureAuthentication(WebApplicationBuilder builder)
         {
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            //         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            //         {
+            //             ValidateIssuerSigningKey = true,
+            //             ValidIssuer = builder.Configuration["Application:JwtSettings:Issuer"],
+            //             ValidAudience = builder.Configuration["Application:JwtSettings:Audience"],
+            //             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Application:JwtSettings:Secret"]))
+            //         });
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+                
+                {
+                    options.Cookie.Name = "SessionCookie";
+                    options.SlidingExpiration = true;
+                    options.ExpireTimeSpan = new TimeSpan(1, 0, 0);
+                    options.Events.OnRedirectToLogin = (context) =>
                     {
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["Application:JwtSettings:Issuer"],
-                        ValidAudience = builder.Configuration["Application:JwtSettings:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Application:JwtSettings:Secret"]))
-                    });
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    };
+                    options.Cookie.HttpOnly = true;
+                });
         }
     }
 }
