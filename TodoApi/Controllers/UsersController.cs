@@ -23,8 +23,9 @@ namespace TodoApi.Controllers
 
         // POST: /users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(LoginData userInfo)
+        public async Task<ActionResult<User>> CreateUser(ApiPayload<AuthData> userInfoPayload)
         {
+            var userInfo = userInfoPayload.Data;
             var user = new User(userInfo.Username, userInfo.Password);
             PasswordUtil.HashUserPassword(user);
 
@@ -36,20 +37,35 @@ namespace TodoApi.Controllers
             }
             catch (DbUpdateException)
             {
-                // TODO: add body
-                return Conflict();
+                return Conflict
+                (
+                    new ApiResponse<SuccessMeta, Empty>
+                    {
+                        Meta = new SuccessMeta
+                        {
+                            Success = false,
+                            Msg = "username already exists"
+                        },
+                        Data = new Empty {}
+                    }
+                );
             }
         }
 
         // GET: /users
         [HttpGet]
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<ApiResponse<FetchUsersMeta, IEnumerable<User>>> GetUsers()
         {
             var users = await _repo.GetAsync();
-
-            var usersDTO = users.Select(user => user);
             
-            return users;
+            return new ApiResponse<FetchUsersMeta, IEnumerable<User>>
+            {
+                Meta = new FetchUsersMeta
+                {
+                    UserCount = users.Count()
+                },
+                Data = users
+            };
         }
 
         // GET: /users/{id}
@@ -70,7 +86,7 @@ namespace TodoApi.Controllers
         // PUT: users/{id}
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordModel resetPasswordInfo)
+        public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ApiResponse<ResetPasswordModel> resetPasswordPayload)
         {
             // Get user for session
             var userId = HttpContext.User.Identity?.Name;
@@ -79,15 +95,22 @@ namespace TodoApi.Controllers
                 return Unauthorized();
             }
 
+            var userToUpdate = await _repo.FindAsync(id);
+
+            // Throw 404 Not Found if user not found
+            if (userToUpdate == null)
+            {
+                return NotFound();
+            }
+
             // Throw 403 Forbidden if user IDs don't match
             if (id.ToString() != userId)
             {
                 return Forbid();
             }
 
-            var userToUpdate = await _repo.FindAsync(id);
-
             // Throw 400 Bad Request if old password incorrect
+            var resetPasswordInfo = resetPasswordPayload.Data;
             if (!PasswordUtil.IsPasswordCorrect(userToUpdate, resetPasswordInfo.OldPassword))
             {
                 return BadRequest
@@ -102,12 +125,6 @@ namespace TodoApi.Controllers
                         Data = new Empty {}
                     }
                 );
-            }
-
-            // Throw 404 Not Found if user not found
-            if (userToUpdate == null)
-            {
-                return NotFound();
             }
 
             // Update password

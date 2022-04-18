@@ -29,10 +29,10 @@ namespace TodoApi.Controllers
 
         // POST: /login
         [HttpPost("/login")]
-        public async Task<ActionResult<ApiResponse<CreateSessionMeta, Session>>> Login([FromBody] ApiPayload<LoginData> payload)
+        public async Task<ActionResult<ApiResponse<CreateSessionMeta, Session>>> Login([FromBody] ApiPayload<AuthData> payload)
         {
             // Get user and check password
-            LoginData loginData = payload.Data;
+            AuthData loginData = payload.Data;
             var users = await _userRepo.GetAsync();
             var user = users.SingleOrDefault(user => 
                 user.Username == loginData.Username

@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS todos (
     user_id UUID REFERENCES users (id), 
     title VARCHAR(50) NOT NULL,
     status completion_status,
-    creation_date TIMESTAMP NOT NULL,
-    due_date TIMESTAMP
+    creation_date TIMESTAMPTZ NOT NULL,
+    due_date TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS tokens (

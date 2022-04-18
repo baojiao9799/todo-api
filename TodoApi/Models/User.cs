@@ -22,6 +22,11 @@ namespace TodoApi.Models {
         }
     }
 
+    public class FetchUsersMeta
+    {
+        public int UserCount { get; set; }
+    }
+
     public class ResetPasswordModel
     {
         public string? OldPassword { get; set; }

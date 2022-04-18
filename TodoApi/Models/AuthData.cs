@@ -1,12 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace TodoApi.Models
 {
-    public class LoginData
+    public class AuthData
     {
-        [Required]
         public string Username { get; set; }
-        [Required]
         public string Password { get; set; }
     }
 }

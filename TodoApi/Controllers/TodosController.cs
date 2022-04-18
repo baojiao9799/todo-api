@@ -22,7 +22,7 @@ namespace TodoApi.Controllers
 
         // POST: /todos
         [HttpPost]
-        public async Task<ActionResult<Todo>> PostTodo(Todo todo)
+        public async Task<ActionResult<Todo>> PostTodo(ApiPayload<Todo> todoPayload)
         {
             // Get user for current session
             var guid = new Guid();
@@ -34,6 +34,7 @@ namespace TodoApi.Controllers
             }
 
             // Create todo for user
+            var todo = todoPayload.Data;
             todo.UserId = guid;
             var createdTodo = await _repo.CreateAsync(todo);
 
