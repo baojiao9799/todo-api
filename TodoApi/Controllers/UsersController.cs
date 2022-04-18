@@ -3,6 +3,7 @@ using TodoApi.Models;
 using TodoApi.Repositories;
 using TodoApi.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TodoApi.Controllers
 {
@@ -68,24 +69,52 @@ namespace TodoApi.Controllers
 
         // PUT: users/{id}
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> ResetPassword(Guid id, [FromBody] ResetPasswordModel resetPasswordInfo)
         {
-            var userToUpdate = await _repo.FindAsync(id);
-
-            if (!PasswordUtil.IsPasswordCorrect(userToUpdate, resetPasswordInfo.OldPassword))
+            // Get user for session
+            var userId = HttpContext.User.Identity?.Name;
+            if (userId == null)
             {
-                return BadRequest();
+                return Unauthorized();
             }
 
+            // Throw 403 Forbidden if user IDs don't match
+            if (id.ToString() != userId)
+            {
+                return Forbid();
+            }
+
+            var userToUpdate = await _repo.FindAsync(id);
+
+            // Throw 400 Bad Request if old password incorrect
+            if (!PasswordUtil.IsPasswordCorrect(userToUpdate, resetPasswordInfo.OldPassword))
+            {
+                return BadRequest
+                (
+                    new ApiResponse<CreateSessionMeta, Empty> 
+                    { 
+                        Meta = new CreateSessionMeta 
+                        { 
+                            Success = false, 
+                            Message = "Incorrect old password"
+                        },
+                        Data = new Empty {}
+                    }
+                );
+            }
+
+            // Throw 404 Not Found if user not found
+            if (userToUpdate == null)
+            {
+                return NotFound();
+            }
+
+            // Update password
             userToUpdate.Password = resetPasswordInfo.NewPassword;
             PasswordUtil.HashUserPassword(userToUpdate);
 
             var updatedUser = await _repo.UpdateAsync(id, userToUpdate);
-
-            if (updatedUser == null)
-            {
-                return NotFound();
-            }
 
             return NoContent();
         }
@@ -93,16 +122,32 @@ namespace TodoApi.Controllers
 
         // DELETE: users/{id}
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-           var deletedUser = await _repo.DeleteAsync(id);
+             // Get user for session
+            var userId = HttpContext.User.Identity?.Name;
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
 
-           if (deletedUser == null)
-           {
-               return NotFound();
-           }
+            // Throw 403 Forbidden if user IDs don't match
+            if (id.ToString() != userId)
+            {
+                return Forbid();
+            }
 
-           return NoContent();
+            // Delete user
+            var deletedUser = await _repo.DeleteAsync(id);
+
+            // Throw 404 Not Found if user not found
+            if (deletedUser == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }

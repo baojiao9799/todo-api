@@ -31,13 +31,12 @@ namespace TodoApi.Controllers
         [HttpPost("/login")]
         public async Task<ActionResult<ApiResponse<CreateSessionMeta, Session>>> Login([FromBody] ApiPayload<LoginData> payload)
         {
+            // Get user and check password
             LoginData loginData = payload.Data;
             var users = await _userRepo.GetAsync();
             var user = users.SingleOrDefault(user => 
                 user.Username == loginData.Username
             );
-
-            var response = new ApiResponse<CreateSessionMeta, Session>();
 
             if (user == null || !PasswordUtil.IsPasswordCorrect(user, loginData.Password))
             {
@@ -50,11 +49,14 @@ namespace TodoApi.Controllers
                     }
                 };
             }
+
+            // Generate JWT
             var expiration = DateTime.UtcNow.AddMinutes(15);
             var jwtToken = JwtUtil.generateJwtToken(user, _appConfig.JwtSettings, expiration);
 
             var dbToken = await _authRepo.CreateAsync(new Token(jwtToken));
-
+            
+            // Set up httponly authentication cookie
             var claims = new List<Claim>
             {
                 new Claim("Jwt", jwtToken),
